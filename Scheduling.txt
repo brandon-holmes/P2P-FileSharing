@@ -1,0 +1,28 @@
+SCHEDULE
+Due Date: Wednesday April 10th 5PM -code
+	  Thursday April 11th -presentation
+
+Sunday April 7th:
+
+	DHT server set-up: Initial IP establishment, communication between DHT servers
+	
+	Client side GUI working - all needed options set up for working connections
+
+	Server: Multithreading achieved, TCP reception
+Monday April 8th:
+
+	continuation: 
+		- DHT server set-up: Initial IP establishment, communication between DHT servers
+		- Server: Multithreading achieved, TCP reception
+	- Client: Implementing functionality of each request
+	- Client: Proper Hashing and TCP connections
+	- Server: Get requests received and dissected properly, sending of proper file
+	- DHT server: Requests for sending information and deletion of information throughout ring.
+
+Tuesday April 9th:	
+	- Contiuation of all previous work
+	- Potential testing begins
+
+Wednesday April 10th:
+	- Finsishing touches on all aspects
+	- Testing must conclude proper results befor 5PM
