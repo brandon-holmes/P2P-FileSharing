@@ -1,7 +1,7 @@
 Helpful Resources:
 Socket/Thread documentation: https://www.oracle.com/technetwork/java/socket-140484.html?fbclid=IwAR2LL4F5vPJiEMxfqnisUOinYYBdHBJTkJ9V5jreTjvMmgoQUhBDHxWKzlo
 
-DHT Server Pool,  information storage / manipulation
+DHT Server Pool,  information storage / manipulation (UDP communication)
 	- Store names of JPEGs, IP addresses of the Clients that have the JPEGs
 	- On request send IP address of specific JPEG
 	- On request delete all information on specific IP address
@@ -16,7 +16,7 @@ P2P Server, Focus on File transfer / HTTP
 
 P2P Client, Connection requests / Hashing
 	- Simple GUI for client commands
-	- Gets IPs of DHT servers
+	- Gets IPs of DHT servers through UDP
 	- Hash and send content to proper server for storage (send IP and JPEG name for storage)
 	- Query to recieve information about specific files (Hashing and request), returns error code if not found
 	- Send HTTP GET request to P2P servers using TCP, seperate HTTP request per file
