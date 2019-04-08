@@ -1,5 +1,6 @@
 Helpful Resources:
 Socket/Thread documentation: https://www.oracle.com/technetwork/java/socket-140484.html?fbclid=IwAR2LL4F5vPJiEMxfqnisUOinYYBdHBJTkJ9V5jreTjvMmgoQUhBDHxWKzlo
+Simple UDP connections: https://systembash.com/a-simple-java-udp-server-and-udp-client/
 
 DHT Server Pool,  information storage / manipulation (UDP communication)
 	- Store names of JPEGs, IP addresses of the Clients that have the JPEGs
