@@ -8,9 +8,23 @@ import java.util.Hashtable;
 public class directoryServer {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		Server server1 = new Server(20381,"141.117.117.212",1);
 		Server server2 = new Server(20382,"141.117.117.213",2);
+		//Thread serverThread1 = new Thread(new Runnable() 
+			//{
+			//@Override
+			//public void run() {
+				//System.out.print("Thread Created");
+				server1.startServer();
+			//}
+		//});
+		//Thread serverThread2 = new Thread(new Runnable() 
+			//{
+			//@Override
+			//public void run() {
+				server2.startServer();
+			//}
+		//});
 		//Server server3 = new Server(20383,null,3);
 		//Server server4 = new Server(20384,null,4);
 	}
@@ -27,9 +41,8 @@ public class directoryServer {
 		InputStream inputToServer;
 		OutputStream outputFromServer;
 		
-		//first String = name of file, second String = ip file is located at
+		//first String = name of file(hashed), second String = ip file is located at
 		Hashtable<String, String> keyValues = new Hashtable<String, String>();
-		
 		
 		//constructor
 		public Server(int port, String ip, int id)//each server in DHT has unique ip
@@ -37,7 +50,6 @@ public class directoryServer {
 			port = this.port;
 			ip = this.ip;
 			id = this.id;
-			
 		}
 		/*
 		public void connect(String ip, int port)
@@ -56,9 +68,8 @@ public class directoryServer {
 		
 		public void startServer()
 		{
-			Thread serverThread1 = new Thread(new Runnable() 
+			Thread serverThread = new Thread(new Runnable() 
 			{
-
 				@Override
 				public void run()
 				{
@@ -66,6 +77,7 @@ public class directoryServer {
 					try 
 					{
 						serverSocket = new ServerSocket(port);//reserves and creates socket on port #
+						System.out.print("Server on port" + port);
 					} 
 					catch (IOException e) 
 					{
