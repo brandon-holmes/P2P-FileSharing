@@ -6,17 +6,17 @@ Sunday April 7th:
 
 	DHT server set-up: Initial IP establishment, communication between DHT servers
 	
-	Client side GUI working - all needed options set up for working connections
+	x Client side GUI working - all needed options set up for working connections
 
-	Server: Multithreading achieved, TCP reception
+	Server: Multithreading achieved, x TCP reception
 Monday April 8th:
 
 	continuation: 
 		- DHT server set-up: Initial IP establishment, communication between DHT servers
-		- Server: Multithreading achieved, TCP reception
-	- Client: Implementing functionality of each request
+		- Server: Multithreading achieved, x TCP reception
+	x - Client: Implementing functionality of each request
 	- Client: Proper Hashing and TCP connections
-	- Server: Get requests received and dissected properly, sending of proper file
+	x - Server: Get requests received and dissected properly, sending of proper file
 	- DHT server: Requests for sending information and deletion of information throughout ring.
 
 Tuesday April 9th:	
