@@ -1,89 +1,82 @@
 package P2P;
+import java.awt.image.BufferedImage;
+import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import javax.imageio.ImageIO;
+
 
 public class p2pclient {
-	private static DatagramSocket socket;
-	private static InetAddress address;
-	private static int port = 2000;
-	private byte[] buff;
+	private static DatagramSocket socket; // UDP Socket
+	private static InetAddress address; //IP Address
+	private static int port = 2000; // DHT server 1 port
+	private static int sPort = 20381; // P2P server port
+	private static byte[] buff = new byte[1024];; //Input buffer
+	private static String[] submissions = new String[15];//Maximum 15 entries from this client
+	private static int subCount=0;
 	
-	
-	public static void main(String [] args) {
-		//run init, getting ip addresses of DHT servers
-		boolean running = true;
-		try {
+	public static void main(String [] args) throws IOException {
+		//(yet to imnplement, might not be needed) run init, getting ip addresses of DHT servers
+		boolean running = true;//GUI /user input run var
+		try {//initialize UDP sockets
 			socket = new DatagramSocket();
 		} catch (SocketException e2) {
 			System.out.println("socket Failure");
 		}
-		try {
-			address = InetAddress.getByName("192.168.2.18");
+		try {//initialize IP address for everything, currently just my local IP
+			address = InetAddress.getByName("192.168.2.18");// Change IP here
 		} catch (UnknownHostException e1) {
 		}
 		
-		while(running) {
+		while(running) {//main loop
 			System.out.println("input 'S' to store content in DHT server \n"
 							+ "input 'Q' to query for content \n"
 							+ "input 'D' to download file \n"
 							+ "input 'E' to exit \n"
 				);
-			System.out.println("round start");
-			Scanner usrInput = new Scanner(System.in);
+			Scanner usrInput = new Scanner(System.in);//gets usr choice
 			String choice = usrInput.next();
-			if( choice.equalsIgnoreCase("S")) { // Sends request for server to store data of IP and files
+			
+			if( choice.equalsIgnoreCase("S")) { // Sends request for DHT pool to store data of IP and files
 				
-				System.out.println("Please type the exact name of the file you wish to upload: ");
-				String file = usrInput.next();
+				System.out.println("Please type the exact name of the file you wish to upload: (including extension)");
+				String file = usrInput.next();//file name
 				
 				int fileHash = computeHash(file);
 				int realPort = port + ((fileHash%4)*2-2);
 				byte[] request = file.getBytes();
 				byte[] requestType = "1".getBytes();
 				DatagramPacket packet = new DatagramPacket(requestType, requestType.length, address, realPort);
+				socket.send(packet);
+				
 				String responseStr;
-				try {
-					socket.send(packet);
-				} catch (IOException e) {
-					System.out.println("Query Failure: failed to send packet.\n");
-					continue;
-				}
 				DatagramPacket response = new DatagramPacket(requestType, requestType.length);
-				try {
-					socket.receive(response);
-					responseStr = new String(packet.getData(),0, packet.getLength());
-				} catch (IOException e) {
-					System.out.println("Query Failure: No response from server \n");
-					continue;
-				}
-				if(responseStr.equals("response")){//verifies server is ready for request
-					DatagramPacket query = new DatagramPacket(request, request.length, address, realPort);
-					try {
+				socket.receive(response);
+				responseStr = new String(packet.getData(),0, packet.getLength());
+				
+					if(responseStr.equals("1")){ //verifies server is ready for request
+						DatagramPacket query = new DatagramPacket(request, request.length, address, realPort);
 						socket.send(query);
-					} catch (IOException e) {
-						System.out.println("Query Failure: Unable to send query \n");
-						continue;
-					}
-					DatagramPacket queryInfo = new DatagramPacket(request, request.length);
-					try {
+						submissions[subCount]=file;
+						subCount++;
+						
+						DatagramPacket queryInfo = new DatagramPacket(request, request.length);
 						socket.receive(queryInfo);
-					} catch (IOException e) {
-						System.out.println("Query Failure: Did not receive query information. \n");
-						continue;
+						String queryInfoStr = new String(queryInfo.getData(),0, queryInfo.getLength());
+						System.out.println(queryInfoStr);
 					}
-					String queryInfoStr = new String(queryInfo.getData(),0, queryInfo.getLength());
-					System.out.println(queryInfoStr);
-				}
-				else {
-					System.out.println("Server sent incorrect response");
-				}
-			
+					else {
+						System.out.println("Server sent incorrect response");
+					}
 			}//End of info store protocol
+			
 			else if (choice.equalsIgnoreCase("Q")) { // asks server to give location of specific file (IP/port) 						
 				System.out.println("Please type the exact name of the file you are looking for: \n");
 				String file = usrInput.next();				
@@ -93,89 +86,73 @@ public class p2pclient {
 				byte[] request = file.getBytes();
 				byte[] requestType = "2".getBytes();
 				DatagramPacket packet = new DatagramPacket(requestType, requestType.length, address,  realPort);
+				socket.send(packet);
+				
 				String responseStr;
-				try {
-					socket.send(packet);
-				} catch (IOException e) {
-					System.out.println("Query Failure: failed to send packet.\n");
-					continue;
-				}
-				DatagramPacket response = new DatagramPacket(requestType, requestType.length);
-				try {
-					socket.receive(response);
-					responseStr = new String(packet.getData(),0, packet.getLength());
-				} catch (IOException e) {
-					System.out.println("Query Failure: No response from server \n");
-					continue;
-				}
-				if(responseStr.equals("response")){//verifies server is ready for request
-					DatagramPacket query = new DatagramPacket(request, request.length, address,  realPort);
-					try {
+				DatagramPacket response = new DatagramPacket(requestType, requestType.length);	
+				socket.receive(response);
+				responseStr = new String(packet.getData(),0, packet.getLength());
+				
+					if(responseStr.equals("1")){//verifies server is ready for request
+						DatagramPacket query = new DatagramPacket(request, request.length, address,  realPort);						
 						socket.send(query);
-					} catch (IOException e) {
-						System.out.println("Query Failure: Unable to send query \n");
-						continue;
-					}
-					DatagramPacket queryInfo = new DatagramPacket(request, request.length);
-					try {
+						DatagramPacket queryInfo = new DatagramPacket(request, request.length);
 						socket.receive(queryInfo);
-					} catch (IOException e) {
-						System.out.println("Query Failure: Did not receive query information. \n");
-						continue;
+						String queryInfoStr = new String(queryInfo.getData(),0, queryInfo.getLength());
+						System.out.println(queryInfoStr);
 					}
-					String queryInfoStr = new String(queryInfo.getData(),0, queryInfo.getLength());
-					System.out.println(queryInfoStr);
-				}
 				//send 
 			}//End of Query protocol
-			else if (choice.equalsIgnoreCase("D")) { // searches 
+			
+			else if (choice.equalsIgnoreCase("D")) { // Initiates TCP connection with 
+				Socket sendSocket = new Socket(address, sPort);
+				DataOutputStream toServer = new DataOutputStream(sendSocket.getOutputStream());
 				
+				//Asks for and sends file name
+				System.out.println("Please type the exact name of the file you wish to download: ");
+				String file = usrInput.next();
+				toServer.writeBytes(file + '\n');
+				
+				//creates empty file for reception of JPEG from server
+				File serverJPEG = new File("received" + file);
+				serverJPEG.createNewFile();
+				
+				//receive file from server
+				BufferedImage image = ImageIO.read(sendSocket.getInputStream());
+					if(image != null) {
+						//Writes image content to empty file created earlier
+						ImageIO.write(image, "jpg", serverJPEG);
+					} 
+					else {
+						//Error if image was not downloaded properly
+						System.out.println("failed to download");
+					}
+				sendSocket.close();
 			}
+			
 			else if (choice.equalsIgnoreCase("E")) { //Initiates exit protocol
-				running = false;			
-				byte[] requestType = "3".getBytes();
-				DatagramPacket packet = new DatagramPacket(requestType, requestType.length, address,  port);
-				String responseStr;
-				try {
+				running = false;
+				int i = 0;
+				while(submissions[i] != null) {
+					byte[] requestType = "3".getBytes();
+					DatagramPacket packet = new DatagramPacket(requestType, requestType.length, address,  port);
 					socket.send(packet);
-				} catch (IOException e) {
-					System.out.println("Exit Failure: failed to send packet, information not removed from DHT server.\n");
-					continue;
-				}
-				DatagramPacket response = new DatagramPacket(requestType, requestType.length);
-				try {
+					
+					String responseStr;
+					DatagramPacket response = new DatagramPacket(requestType, requestType.length);
 					socket.receive(response);
 					responseStr = new String(packet.getData(),0, packet.getLength());
-				} catch (IOException e) {
-					System.out.println("Query Failure: No response from server \n");
-					continue;
-				}
-				if(responseStr.equals("response")){//verifies server has successfully removed client information 
-					System.out.println("Succesfully removed information from server, shutting down");
+						if(responseStr.equals("1")){//verifies server has successfully removed client information 
+							byte[] fileName = submissions[i].getBytes();
+							DatagramPacket delInfo = new DatagramPacket(fileName, fileName.length, address,  port);
+							socket.send(delInfo);
+						}
+					i++;
 				}
 				usrInput.close();
 			}//End of Exit protocol
 			else {
-				byte[] space = new byte[1024];
-				System.out.println("Unrecognized input");
-				byte[] requestType = "second try yea haw".getBytes();
-				DatagramPacket packet = new DatagramPacket(requestType, requestType.length, address,  port);
-				try {
-					socket.send(packet);
-				} catch (IOException e) {
-					System.out.println("Exit Failure: failed to send packet, information not removed from DHT server.\n");
-					continue;
-				}
-				DatagramPacket response = new DatagramPacket(space, space.length);
-				try {
-					socket.receive(response);
-					String responseStr = new String(response.getData(),0, response.getLength());
-					System.out.println(responseStr +"response");
-				} catch (IOException e) {
-					System.out.println("Query Failure: No response from server \n");
-					continue;
-				}
-				
+				System.out.println("Unrecognized input. Try Again.");				
 			}
 			
 		}
