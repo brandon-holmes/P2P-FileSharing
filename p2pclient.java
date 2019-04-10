@@ -32,7 +32,7 @@ public class p2pclient {
 			System.out.println("socket Failure");
 		}
 		try {//initialize IP address for everything, currently just my local IP
-			address = InetAddress.getByName("192.168.2.18");// Change IP here
+			address = InetAddress.getByName(args[0]);// Change IP here
 		} catch (UnknownHostException e1) {
 		}
 		
@@ -106,8 +106,9 @@ public class p2pclient {
 			}//End of Query protocol
 			
 			else if (choice.equalsIgnoreCase("D")) { // Initiates TCP connection with 
-				System.out.println("Please type the exact IP of the server you wish to download from (use query for server IP: ");
-				String serverAdress = usrInput.next();
+				System.out.println("Please type the exact IP of the server you wish to download from (use query for server IP): ");
+				String serverAdressStr = usrInput.next();
+				serverAddress =  InetAddress.getByName(serverAdressStr);
 				Socket sendSocket = new Socket(serverAddress, sPort);
 				DataOutputStream toServer = new DataOutputStream(sendSocket.getOutputStream());
 				
