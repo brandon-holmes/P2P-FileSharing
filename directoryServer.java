@@ -1,3 +1,5 @@
+package P2P;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -152,7 +154,7 @@ public class directoryServer {
 				
 				byte[] requestType = "1".getBytes();
 				String request;
-				byte[] file;
+				byte[] file = new byte[1024];
 				String filenameHash;
 				
 	            while(true)
@@ -162,7 +164,7 @@ public class directoryServer {
 	            		DatagramPacket recieveQuery = new DatagramPacket(requestType, requestType.length);
 		            	udpSocket.receive(recieveQuery);
 		            	request = new String(recieveQuery.getData());
-		            	
+		            	InetAddress ipAddress = recieveQuery.getAddress();
 		            	if (request.equals("1"))//Store image hash
 		            	{
 		            		//confirm connection
@@ -193,8 +195,9 @@ public class directoryServer {
 		    				filenameHash = new String(queryInfo.getData());
 		    				
 		    				//find and return ip
-		    				String ipLocation = keyValues.get(filenameHash);
-		    				DatagramPacket location = new DatagramPacket(ipLocation, ipLocation.length(), ipAddress, port);
+		    				String ipLocationStr = keyValues.get(filenameHash);
+		    				byte[] ipLocation = ipLocationStr.getBytes();
+		    				DatagramPacket location = new DatagramPacket(ipLocation, ipLocation.length, ipAddress, port);
 		            	}
 		            	
 		            	if (request.equals("3"))//Delete 
