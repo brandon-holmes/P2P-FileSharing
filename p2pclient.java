@@ -60,20 +60,15 @@ public class p2pclient {
 				socket.send(packet);
 				
 				String responseStr;
-				DatagramPacket response = new DatagramPacket(requestType, requestType.length);
+				DatagramPacket response = new DatagramPacket(buff, buff.length);
 				socket.receive(response);
 				responseStr = new String(packet.getData(),0, packet.getLength());
 				
 					if(responseStr.equals("1")){ //verifies server is ready for request
-						DatagramPacket query = new DatagramPacket(request, request.length, address, realPort);
-						socket.send(query);
+						DatagramPacket data = new DatagramPacket(request, request.length, address, realPort);
+						socket.send(data);
 						submissions[subCount]=file;
 						subCount++;
-						
-						DatagramPacket queryInfo = new DatagramPacket(request, request.length);
-						socket.receive(queryInfo);
-						String queryInfoStr = new String(queryInfo.getData(),0, queryInfo.getLength());
-						System.out.println(queryInfoStr);
 					}
 					else {
 						System.out.println("Server sent incorrect response");
