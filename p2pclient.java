@@ -1,4 +1,5 @@
-package P2P;
+//Brandon Holmes 500751878
+//peer to peer client used to interact with the created DHT server and P2P server
 import java.awt.image.BufferedImage;
 import java.io.DataOutputStream;
 import java.io.File;
