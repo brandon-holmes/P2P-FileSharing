@@ -15,10 +15,11 @@ import javax.imageio.ImageIO;
 
 public class p2pclient {
 	private static DatagramSocket socket; // UDP Socket
-	private static InetAddress address; //IP Address
+	private static InetAddress address; //DHT Pool IP Address
+	private static InetAddress serverAddress;//Server IP
 	private static int port = 2000; // DHT server 1 port
 	private static int sPort = 20381; // P2P server port
-	private static byte[] buff = new byte[1024];; //Input buffer
+	private static byte[] buff = new byte[1024]; //Input buffer
 	private static String[] submissions = new String[15];//Maximum 15 entries from this client
 	private static int subCount=0;
 	
@@ -105,7 +106,9 @@ public class p2pclient {
 			}//End of Query protocol
 			
 			else if (choice.equalsIgnoreCase("D")) { // Initiates TCP connection with 
-				Socket sendSocket = new Socket(address, sPort);
+				System.out.println("Please type the exact IP of the server you wish to download from (use query for server IP: ");
+				String serverAdress = usrInput.next();
+				Socket sendSocket = new Socket(serverAddress, sPort);
 				DataOutputStream toServer = new DataOutputStream(sendSocket.getOutputStream());
 				
 				//Asks for and sends file name
