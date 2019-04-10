@@ -5,7 +5,7 @@ Group: 29
 Sections done by:
 P2P Server(P2PServer.java): Matthew Sacco 500574287
 P2P Client(p2pclient.java): Brandon Holmes 500751878
-DHT Server Pool (directoryServer.java):Daniel Watchon 500761335
+DHT Server Pool (directoryServer.java): Brandon Holmes 500751878/Daniel Watchon 500761335
 
 In order to run the program:
 1) On any machine, run directoryServer.java first, using any IDE or javac/java commands
