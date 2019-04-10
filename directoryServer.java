@@ -13,16 +13,26 @@ import java.util.Hashtable;
 public class directoryServer {
 
 	public static void main(String[] args) {
-		Server server1 = new Server(20382,"141.117.117.173",1);
-		Server server2 = new Server(20384,"141.117.117.173",2);
-		Server server3 = new Server(20386,"141.117.117.173",3);
-		Server server4 = new Server(20388,"141.117.117.173",4);
+		try
+		{
+			Server server1 = new Server(20380,InetAddress.getByName(null).toString(),1);
+			Server server2 = new Server(20382,InetAddress.getByName(null).toString(),2);
+			Server server3 = new Server(20384,InetAddress.getByName(null).toString(),3);
+			Server server4 = new Server(20386,InetAddress.getByName(null).toString(),4);
+			
+			server1.listenUDP();
+			server2.listenUDP();
+			server3.listenUDP();
+			server4.listenUDP();
+		}
+		catch (IOException e)
+		{
+			System.out.println("Can't create server");
+		}
 		
 		
-		server1.listenUDP();
-		server2.listenUDP();
-		server3.listenUDP();
-		server4.listenUDP();
+		
+		
 		
 		
 		//these are supposed to connect each server in a circle with tcp connections
@@ -70,7 +80,7 @@ public class directoryServer {
 			
 			try
 			{
-				udpSocket = new DatagramSocket();
+				udpSocket = new DatagramSocket(this.port);
 			}
 			catch (IOException e) 
 			{
@@ -94,7 +104,8 @@ public class directoryServer {
 		
 		public void listenTCP()
 		{
-			
+			Thread tcp = new Thread(tcpRunnable);
+			tcp.start();
 		}
 		
 		public void listenUDP()
