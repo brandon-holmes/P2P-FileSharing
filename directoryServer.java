@@ -1,3 +1,5 @@
+package P2P;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,13 +17,17 @@ public class directoryServer {
 		Server server2 = new Server(20384,"141.117.117.173",2);
 		Server server3 = new Server(20386,"141.117.117.173",3);
 		Server server4 = new Server(20388,"141.117.117.173",4);
-		/*new Thread(server1).start();
-		new Thread(server2).start();
-		new Thread(server3).start();
-		new Thread(server4).start();*/
+		
+		
+		server1.listenUDP();
+		server2.listenUDP();
+		server3.listenUDP();
+		server4.listenUDP();
+		
 		
 		//these are supposed to connect each server in a circle with tcp connections
 		//idk if these actually work
+		/*
 		server2.listenTCP();
 		server1.connect(server2.ip, server2.port);
 		server3.listenTCP();
@@ -30,7 +36,7 @@ public class directoryServer {
 		server3.connect(server4.ip, server4.port);
 		server1.listenTCP();
 		server4.connect(server1.ip, server1.port);
-		
+		*/
 		
 	}
 	
@@ -61,6 +67,15 @@ public class directoryServer {
 			this.port = port;
 			this.ip = ip;
 			this.id = id;
+			
+			try
+			{
+				udpSocket = new DatagramSocket();
+			}
+			catch (IOException e) 
+			{
+				System.out.println("Port not available");
+			}
 		}
 		
 		public void connect(String ip, int port)
@@ -79,49 +94,19 @@ public class directoryServer {
 		
 		public void listenTCP()
 		{
-			try 
-			{
-				clientSocket = serverSocket.accept();//listens and accepts connection with client
-				System.out.println("Connected");
-			} 
-			catch (IOException e) 
-			{
-				System.out.println("Can't accept connection");
-			}
 			
-			try 
-			{
-				//input and output i think?
-				inputToServer = clientSocket.getInputStream();
-				outputFromServer = clientSocket.getOutputStream();
-			} 
-			catch (IOException e) 
-			{
-				System.out.println("Read Failed");
-			}
-			
-			while(true)
-			{
-				try
-				{
-					//what to do with input and output
-					int input = inputToServer.read();
-					//String output = outputFromServer.write();//insert method here
-				} 
-				catch (IOException e) 
-				{
-					System.out.println("Read Failed");
-				}
-			}
+		}
+		
+		public void listenUDP()
+		{
+			Thread udp = new Thread(udpRunnable);
+			udp.start();
 		}
 		
 		Runnable tcpRunnable = new Runnable()
 		{
 			public void run()
-			{
-				while(true)
-				{
-					
+			{				
 					System.out.println("TCP Server starting");
 					try 
 					{
@@ -132,6 +117,40 @@ public class directoryServer {
 					{
 						System.out.println("Port not available");
 					}
+				
+				try 
+				{
+					clientSocket = serverSocket.accept();//listens and accepts connection with client
+					System.out.println("Connected");
+				} 
+				catch (IOException e) 
+				{
+					System.out.println("Can't accept connection");
+				}
+				
+				try 
+				{
+					//input and output i think?
+					inputToServer = clientSocket.getInputStream();
+					outputFromServer = clientSocket.getOutputStream();
+				} 
+				catch (IOException e) 
+				{
+					System.out.println("Read Failed");
+				}
+				
+				while(true)
+				{
+					try
+					{
+						//what to do with input and output
+						int input = inputToServer.read();
+						//String output = outputFromServer.write();//insert method here
+					} 
+					catch (IOException e) 
+					{
+						System.out.println("Read Failed");
+					}
 				}
 			}
 		};
@@ -141,18 +160,11 @@ public class directoryServer {
 			public void run()
 			{
 				System.out.println("UDP Server starting");
-				try
-				{
-					DatagramSocket udpSocket = new DatagramSocket(port);
-				}
-				catch (IOException e) 
-				{
-					System.out.println("Port not available");
-				}
+				
 				
 				byte[] requestType = "1".getBytes();
 				String request;
-				byte[] file;
+				byte[] file = new byte[1024];
 				String filenameHash;
 				
 	            while(true)
@@ -162,7 +174,7 @@ public class directoryServer {
 	            		DatagramPacket recieveQuery = new DatagramPacket(requestType, requestType.length);
 		            	udpSocket.receive(recieveQuery);
 		            	request = new String(recieveQuery.getData());
-		            	
+		            	InetAddress ipAddress = recieveQuery.getAddress();
 		            	if (request.equals("1"))//Store image hash
 		            	{
 		            		//confirm connection
@@ -193,8 +205,9 @@ public class directoryServer {
 		    				filenameHash = new String(queryInfo.getData());
 		    				
 		    				//find and return ip
-		    				String ipLocation = keyValues.get(filenameHash);
-		    				DatagramPacket location = new DatagramPacket(ipLocation, ipLocation.length(), ipAddress, port);
+		    				String ipLocationStr = keyValues.get(filenameHash);
+		    				byte[] ipLocation = ipLocationStr.getBytes();
+		    				DatagramPacket location = new DatagramPacket(ipLocation, ipLocation.length, ipAddress, port);
 		            	}
 		            	
 		            	if (request.equals("3"))//Delete 
