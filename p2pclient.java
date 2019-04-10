@@ -94,7 +94,7 @@ public class p2pclient {
 					if(responseStr.equals("1")){//verifies server is ready for request
 						DatagramPacket query = new DatagramPacket(request, request.length, address,  realPort);						
 						socket.send(query);
-						DatagramPacket queryInfo = new DatagramPacket(request, request.length);
+						DatagramPacket queryInfo = new DatagramPacket(buff, buff.length);
 						socket.receive(queryInfo);
 						String queryInfoStr = new String(queryInfo.getData(),0, queryInfo.getLength());
 						System.out.println(queryInfoStr);
