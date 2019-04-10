@@ -15,10 +15,10 @@ public class directoryServer {
 	public static void main(String[] args) {
 		try
 		{
-			Server server1 = new Server(20380,InetAddress.getByName(null).toString(),1);
-			Server server2 = new Server(20382,InetAddress.getByName(null).toString(),2);
-			Server server3 = new Server(20384,InetAddress.getByName(null).toString(),3);
-			Server server4 = new Server(20386,InetAddress.getByName(null).toString(),4);
+			Server server1 = new Server(20380,InetAddress.getLocalHost(),1);
+			Server server2 = new Server(20382,InetAddress.getLocalHost(),2);
+			Server server3 = new Server(20384,InetAddress.getLocalHost(),3);
+			Server server4 = new Server(20386,InetAddress.getLocalHost(),4);
 			
 			server1.listenUDP();
 			server2.listenUDP();
@@ -53,7 +53,7 @@ public class directoryServer {
 	public static class Server
 	{
 		int port;//range is 20380-20389
-		String ip;
+		InetAddress ip;
 		int id;//1-4
 		int nextPort;
 		int nextIp;
@@ -69,13 +69,13 @@ public class directoryServer {
 		OutputStream outputFromServer;
 		
 		//first int = name of file(hashed), second String = ip file is located at
-		Hashtable<String, String> keyValues = new Hashtable<String, String>();
+		Hashtable<String, InetAddress> keyValues = new Hashtable<String, InetAddress>();
 		
 		//constructor
-		public Server(int port, String ip, int id)//each server in DHT has unique ip
+		public Server(int port, InetAddress inetAddress2, int id)//each server in DHT has unique ip
 		{
 			this.port = port;
-			this.ip = ip;
+			this.ip = inetAddress2;
 			this.id = id;
 			
 			try
@@ -177,6 +177,7 @@ public class directoryServer {
 				String request;
 				byte[] file = new byte[1024];
 				String filenameHash;
+				int source;
 				
 	            while(true)
 	            {
@@ -186,11 +187,12 @@ public class directoryServer {
 		            	udpSocket.receive(recieveQuery);
 		            	request = new String(recieveQuery.getData());
 		            	InetAddress ipAddress = recieveQuery.getAddress();
+		            	source = recieveQuery.getPort();
 		            	if (request.equals("1"))//Store image hash
 		            	{
 		            		//confirm connection
 		            		byte[] confirm = "1".getBytes();
-		            		DatagramPacket confirmation = new DatagramPacket(confirm, confirm.length, ipAddress, port);
+		            		DatagramPacket confirmation = new DatagramPacket(confirm, confirm.length, ipAddress, source);
 		    				udpSocket.send(confirmation);
 		    				
 		    				//receive hash
@@ -199,15 +201,14 @@ public class directoryServer {
 		    				filenameHash = new String(storeInfo.getData());
 		    				
 		    				//store hash
-		    				keyValues.put(filenameHash,ip);//ip should be ip of p2p server
-		    				
+		    				keyValues.put(filenameHash,ip);//ip should be ip of p2p server	
 		            	}
 		            	
 		            	if (request.equals("2"))//Query Hash
 		            	{
 		            		//confirm connection
 		            		byte[] confirm = "1".getBytes();
-		            		DatagramPacket confirmation = new DatagramPacket(confirm, confirm.length, ipAddress, port);
+		            		DatagramPacket confirmation = new DatagramPacket(confirm, confirm.length, ipAddress, source);
 		    				udpSocket.send(confirmation);
 		    				
 		    				//receive hash
@@ -216,16 +217,16 @@ public class directoryServer {
 		    				filenameHash = new String(queryInfo.getData());
 		    				
 		    				//find and return ip
-		    				String ipLocationStr = keyValues.get(filenameHash);
-		    				byte[] ipLocation = ipLocationStr.getBytes();
-		    				DatagramPacket location = new DatagramPacket(ipLocation, ipLocation.length, ipAddress, port);
+		    				InetAddress ipLocationStr = keyValues.get(filenameHash);
+		    				byte[] ipLocation = ipLocationStr.getHostAddress().getBytes();
+		    				DatagramPacket location = new DatagramPacket(ipLocation, ipLocation.length, ipAddress, source);
 		            	}
 		            	
 		            	if (request.equals("3"))//Delete 
 		            	{
 		            		//confirm connection
 		            		byte[] confirm = "1".getBytes();
-		            		DatagramPacket confirmation = new DatagramPacket(confirm, confirm.length, ipAddress, port);
+		            		DatagramPacket confirmation = new DatagramPacket(confirm, confirm.length, ipAddress, source);
 		    				udpSocket.send(confirmation);
 		    				
 		    				//receive hash
@@ -247,7 +248,7 @@ public class directoryServer {
 		};
 		
 		//None of these are really used
-		public void addFile(String hash, String ip)
+		public void addFile(String hash, InetAddress ip)
 		{
 			keyValues.put(hash, ip); 
 		}
@@ -257,7 +258,7 @@ public class directoryServer {
 			keyValues.remove(hash);
 		}
 		
-		public String sendInfo(int hash)
+		public InetAddress sendInfo(int hash)
 		{
 			return keyValues.get(hash); 
 		}
