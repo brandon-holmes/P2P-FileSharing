@@ -15,10 +15,13 @@ public class directoryServer {
 		Server server2 = new Server(20384,"141.117.117.173",2);
 		Server server3 = new Server(20386,"141.117.117.173",3);
 		Server server4 = new Server(20388,"141.117.117.173",4);
-		new Thread(server1).start();
+		/*new Thread(server1).start();
 		new Thread(server2).start();
 		new Thread(server3).start();
-		new Thread(server4).start();
+		new Thread(server4).start();*/
+		
+		//these are supposed to connect each server in a circle with tcp connections
+		//idk if these actually work
 		server2.listenTCP();
 		server1.connect(server2.ip, server2.port);
 		server3.listenTCP();
@@ -28,9 +31,10 @@ public class directoryServer {
 		server1.listenTCP();
 		server4.connect(server1.ip, server1.port);
 		
+		
 	}
 	
-	public static class Server implements Runnable
+	public static class Server
 	{
 		int port;//range is 20380-20389
 		String ip;
@@ -49,7 +53,7 @@ public class directoryServer {
 		OutputStream outputFromServer;
 		
 		//first int = name of file(hashed), second String = ip file is located at
-		Hashtable<Integer, String> keyValues = new Hashtable<Integer, String>();
+		Hashtable<String, String> keyValues = new Hashtable<String, String>();
 		
 		//constructor
 		public Server(int port, String ip, int id)//each server in DHT has unique ip
@@ -69,7 +73,7 @@ public class directoryServer {
 			}
 			catch (IOException e)
 			{
-				//error if ip unknown
+				System.out.println("Can't connect to ip");
 			}
 		}
 		
@@ -115,15 +119,19 @@ public class directoryServer {
 		{
 			public void run()
 			{
-				System.out.println("TCP Server starting");
-				try 
+				while(true)
 				{
-					serverSocket = new ServerSocket(port);//reserves and creates socket on port #
-					System.out.println("Server on port " + port);
-				} 
-				catch (IOException e) 
-				{
-					System.out.println("Port not available");
+					
+					System.out.println("TCP Server starting");
+					try 
+					{
+						serverSocket = new ServerSocket(port);//reserves and creates socket on port #
+						System.out.println("Server on port " + port);
+					} 
+					catch (IOException e) 
+					{
+						System.out.println("Port not available");
+					}
 				}
 			}
 		};
@@ -143,27 +151,89 @@ public class directoryServer {
 				}
 				
 				byte[] requestType = "1".getBytes();
+				String request;
+				byte[] file;
+				String filenameHash;
 				
 	            while(true)
 	            {
 	            	try
 	            	{
-	            		DatagramPacket recieveQuery = new DatagramPacket(requestType, requestType.length, inetAddress, port);
+	            		DatagramPacket recieveQuery = new DatagramPacket(requestType, requestType.length);
 		            	udpSocket.receive(recieveQuery);
+		            	request = new String(recieveQuery.getData());
+		            	
+		            	if (request.equals("1"))//Store image hash
+		            	{
+		            		//confirm connection
+		            		byte[] confirm = "1".getBytes();
+		            		DatagramPacket confirmation = new DatagramPacket(confirm, confirm.length, ipAddress, port);
+		    				udpSocket.send(confirmation);
+		    				
+		    				//receive hash
+		    				DatagramPacket storeInfo = new DatagramPacket(file, request.length());
+		    				udpSocket.receive(storeInfo);
+		    				filenameHash = new String(storeInfo.getData());
+		    				
+		    				//store hash
+		    				keyValues.put(filenameHash,ip);//ip should be ip of p2p server
+		    				
+		            	}
+		            	
+		            	if (request.equals("2"))//Query Hash
+		            	{
+		            		//confirm connection
+		            		byte[] confirm = "1".getBytes();
+		            		DatagramPacket confirmation = new DatagramPacket(confirm, confirm.length, ipAddress, port);
+		    				udpSocket.send(confirmation);
+		    				
+		    				//receive hash
+		    				DatagramPacket queryInfo = new DatagramPacket(file, request.length());
+		    				udpSocket.receive(queryInfo);
+		    				filenameHash = new String(queryInfo.getData());
+		    				
+		    				//find and return ip
+		    				String ipLocation = keyValues.get(filenameHash);
+		    				DatagramPacket location = new DatagramPacket(ipLocation, ipLocation.length(), ipAddress, port);
+		            	}
+		            	
+		            	if (request.equals("3"))//Delete 
+		            	{
+		            		//confirm connection
+		            		byte[] confirm = "1".getBytes();
+		            		DatagramPacket confirmation = new DatagramPacket(confirm, confirm.length, ipAddress, port);
+		    				udpSocket.send(confirmation);
+		    				
+		    				//receive hash
+		    				DatagramPacket deleteInfo = new DatagramPacket(file, request.length());
+		    				udpSocket.receive(deleteInfo);
+		    				filenameHash = new String(deleteInfo.getData());
+		    				
+		    				//remove hash and pair
+		    				keyValues.remove(filenameHash);
+		            	}
+		            	
 	            	}
 	            	catch (IOException e)
 	            	{
-	            		System.out.println("Failed to receive packet");
+	            		System.out.println("Failed to receive/send packet");
 	            	}
 	            }
 			}
 		};
-		public void addFile(int hash, String ip)
+		
+		//None of these are really used
+		public void addFile(String hash, String ip)
 		{
 			keyValues.put(hash, ip); 
 		}
 		
-		public String sendInfo(String hash)
+		public void removeFile(String hash)
+		{
+			keyValues.remove(hash);
+		}
+		
+		public String sendInfo(int hash)
 		{
 			return keyValues.get(hash); 
 		}
