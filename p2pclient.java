@@ -19,7 +19,7 @@ public class p2pclient {
 	private static DatagramSocket socket; // UDP Socket
 	private static InetAddress address; //DHT Pool IP Address
 	private static InetAddress serverAddress;//Server IP
-	private static int port = 2000; // DHT server 1 port
+	private static int port = 20380; // DHT server 1 port
 	private static int sPort = 20381; // P2P server port
 	private static byte[] buff = new byte[1024]; //Input buffer
 	private static String[] submissions = new String[15];//Maximum 15 entries from this client
