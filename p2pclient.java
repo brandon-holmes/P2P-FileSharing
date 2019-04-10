@@ -169,7 +169,7 @@ public class p2pclient {
 		char[] cArray = name.toCharArray();
 		for (int i = 0; i< name.length(); i++) {
 			int ascii = (int) cArray[i];
-			System.out.println(ascii);
+			//System.out.println(ascii); //used to verify ascii values of each char
 			hash = hash + ascii;
 		}
 		return hash;
