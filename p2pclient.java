@@ -1,3 +1,4 @@
+package P2P;
 //Brandon Holmes 500751878
 //peer to peer client used to interact with the created DHT server and P2P server
 import java.awt.image.BufferedImage;
@@ -52,7 +53,7 @@ public class p2pclient {
 				String file = usrInput.next();//file name
 				
 				int fileHash = computeHash(file);
-				int realPort = port + ((fileHash%4)*2-2);
+				int realPort = port + ((fileHash%4)*2);
 				byte[] request = file.getBytes();
 				byte[] requestType = "1".getBytes();
 				DatagramPacket packet = new DatagramPacket(requestType, requestType.length, address, realPort);
@@ -84,7 +85,7 @@ public class p2pclient {
 				String file = usrInput.next();				
 				
 				int fileHash = computeHash(file);
-				int realPort = port + ((fileHash%4)*2-2);
+				int realPort = port + ((fileHash%4)*2);
 				byte[] request = file.getBytes();
 				byte[] requestType = "2".getBytes();
 				DatagramPacket packet = new DatagramPacket(requestType, requestType.length, address,  realPort);
@@ -139,8 +140,10 @@ public class p2pclient {
 				running = false;
 				int i = 0;
 				while(submissions[i] != null) {
+					int fileHash = computeHash(submissions[i]);
+					int realPort = port + ((fileHash%4)*2);
 					byte[] requestType = "3".getBytes();
-					DatagramPacket packet = new DatagramPacket(requestType, requestType.length, address,  port);
+					DatagramPacket packet = new DatagramPacket(requestType, requestType.length, address,  realPort);
 					socket.send(packet);
 					
 					String responseStr;
@@ -149,7 +152,7 @@ public class p2pclient {
 					responseStr = new String(packet.getData(),0, packet.getLength());
 						if(responseStr.equals("1")){//verifies server has successfully removed client information 
 							byte[] fileName = submissions[i].getBytes();
-							DatagramPacket delInfo = new DatagramPacket(fileName, fileName.length, address,  port);
+							DatagramPacket delInfo = new DatagramPacket(fileName, fileName.length, address, realPort);
 							socket.send(delInfo);
 						}
 					i++;
