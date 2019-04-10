@@ -1,0 +1,21 @@
+CPS706 - P2P FileSharing
+April 10th, 2019
+
+Sections done by:
+P2P Server(P2PServer.java): Matthew Sacco 500574287
+P2P Client(p2pclient.java): Brandon Holmes 500751878
+DHT Server Pool (directoryServer.java):Daniel Watchon 500761335
+
+In order to run the program:
+1) On any machine, run directoryServer.java first, using any IDE or javac/java commands
+2) On any machine, run first P2PServer.java, and then p2pclient.java with the given arg: directoryServer IP, whatever that may be (ex: 192.0.2.1)
+3) Repeat step 2 to create more P2P client/servers, on as many machines as wanted.
+4) Follow the instructions given by the p2pclient.java, the DHT servers start with 0 entries so in order for any entries to be valid at leastone
+   p2pclient must use the "U" command to upload at least one file
+5) Repeat step 4 with up to 15 files per client.
+6) In order to find a certain file use the "Q" query input on any client to search for a specific file name, this will return the IP of where the file is stored
+7) Using the given IP from query and the file name searched, use the "D" command in any client followed by inputting the IP and file name to download 
+   the file from the given IP address.
+8) In order to exit and delete all entries from a certain client use the "E" command to clear the entries from the DHT pool and end the program.
+
+ 
